@@ -1,8 +1,8 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from "axios";
 import {
   initializeWebServer,
   stopWebServer,
-} from '../../src/application/ServerApplication';
+} from "../../src/application/ServerApplication";
 
 let axiosAPIClient: AxiosInstance;
 
@@ -21,10 +21,10 @@ afterAll(async () => {
   await stopWebServer();
 });
 
-describe('/api', () => {
-  describe('GET /', () => {
-    test('When request, Then should return hello world', async () => {
-      const getResponse = await axiosAPIClient.get('/');
+describe("/", () => {
+  describe("GET /", () => {
+    test("When request, Then should return hello world", async () => {
+      const getResponse = await axiosAPIClient.get("/");
 
       expect(getResponse).toMatchObject({
         status: 200,

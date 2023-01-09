@@ -1,3 +1,3 @@
-import { initializeWebServer } from './application/ServerApplication';
+import { initializeWebServer } from "./application/ServerApplication";
 
 initializeWebServer();

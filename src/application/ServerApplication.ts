@@ -1,8 +1,8 @@
-import { INestApplication } from '@nestjs/common';
-import { Logger } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
-import { ApiServerConfig } from '../infrastructure/config/ApiServerConfig';
+import { INestApplication } from "@nestjs/common";
+import { Logger } from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "../app.module";
+import { ApiServerConfig } from "../infrastructure/config/ApiServerConfig";
 
 let app: INestApplication;
 
