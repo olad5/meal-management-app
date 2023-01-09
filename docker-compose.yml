@@ -1,0 +1,29 @@
+version: "3"
+services: 
+  postgres:
+    container_name: app_postgres
+    image: postgres:14.5
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_local:/var/lib/postgresql/data
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: newPassword
+      POSTGRES_DB: app-db
+
+  adminer:
+    container_name: app_adminer_dev
+    image: adminer:4.8.1
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: postgresql
+      ADMINER_DESIGN: hever
+    ports:
+      - "8080:8080"
+    depends_on:
+      - app_postgres
+
+volumes:
+  pg_data_local:
