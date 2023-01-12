@@ -21,7 +21,7 @@ services:
       ADMINER_DEFAULT_SERVER: postgresql
       ADMINER_DESIGN: hever
     ports:
-      - "8080:8080"
+      - "7070:8080"
     depends_on:
       - app_postgres
 
