@@ -9,7 +9,7 @@ const getFirstName = faker.name.firstName;
 const getLastName = faker.name.lastName;
 const getDate = (start: Date, end: Date) =>
   faker.date.betweens(start, end, 1)[0];
-const getShortNote = faker.lorem.paragraph(1);
+const getShortNote: string = faker.lorem.paragraph(1).slice(0, 14);
 const getParagraph = faker.lorem.paragraph;
 const getId = faker.datatype.uuid;
 

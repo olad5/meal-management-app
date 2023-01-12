@@ -9,11 +9,18 @@ export class CoreApiResponse<TData> {
   public readonly timestamp: number;
 
   public readonly data: Nullable<TData>;
+  public readonly stackTrace: string;
 
-  private constructor(code: number, message: string, data?: TData) {
+  private constructor(
+    code: number,
+    message: string,
+    data?: TData,
+    stackTrace?: string,
+  ) {
     this.code = code;
     this.message = message;
     this.data = data;
+    this.stackTrace = stackTrace;
     this.timestamp = Date.now();
   }
 
@@ -31,10 +38,11 @@ export class CoreApiResponse<TData> {
     code?: number,
     message?: string,
     data?: TData,
+    stackTrace?: string,
   ): CoreApiResponse<TData> {
     const resultCode: number = code || Code.INTERNAL_ERROR.code;
     const resultMessage: string = message || Code.INTERNAL_ERROR.message;
 
-    return new CoreApiResponse(resultCode, resultMessage, data);
+    return new CoreApiResponse(resultCode, resultMessage, data, stackTrace);
   }
 }

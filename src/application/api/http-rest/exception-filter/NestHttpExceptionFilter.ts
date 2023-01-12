@@ -25,12 +25,17 @@ export class NestHttpExceptionFilter implements ExceptionFilter {
 
     errorResponse = this.handleNestError(error, errorResponse);
     errorResponse = this.handleCoreException(error, errorResponse);
+    const errorStackTrace: string =
+      errorResponse.code >= 500
+        ? `\n\nStrackTrace: ${errorResponse.stackTrace}\n`
+        : "";
 
     if (ApiServerConfig.LOG_ENABLE) {
       const message: string =
         `Method: ${request.method}; ` +
         `Path: ${request.path}; ` +
-        `Error: ${errorResponse.message}`;
+        `Error: ${errorResponse.message}` +
+        errorStackTrace;
 
       Logger.error(message);
     }
@@ -69,6 +74,7 @@ export class NestHttpExceptionFilter implements ExceptionFilter {
         error.code,
         error.message,
         error.data,
+        error.stack,
       );
     }
 
