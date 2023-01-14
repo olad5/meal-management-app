@@ -18,6 +18,9 @@ export class AddonUseCaseDto {
   @Expose()
   public brandId: string;
 
+  @Expose()
+  public price: number;
+
   public static newFromAddon(addon: Addon): AddonUseCaseDto {
     return plainToClass(AddonUseCaseDto, addon);
   }

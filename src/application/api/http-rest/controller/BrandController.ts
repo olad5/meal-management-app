@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Inject,
   Param,
+  Patch,
   Post,
 } from "@nestjs/common";
 import { CoreApiResponse } from "../../../../core/common/api/CoreApiResponse";
@@ -24,6 +25,8 @@ import { GetAddonListAdapter } from "../../../../infrastructure/adapter/usecase/
 import { GetAddonListUseCase } from "../../../../core/domain/addon/usecase/GetAddonListUseCase";
 import { GetAddonAdapter } from "../../../../infrastructure/adapter/usecase/addon/GetAddonAdapter";
 import { GetAddonUseCase } from "../../../../core/domain/addon/usecase/GetAddonUseCase";
+import { UpdateAddonAdapter } from "../../../../infrastructure/adapter/usecase/addon/UpdateAddonAdapter";
+import { UpdateAddonUseCase } from "../../../../core/domain/addon/usecase/UpdateAddonUseCase";
 
 @Controller("brands")
 export class BrandController {
@@ -36,6 +39,8 @@ export class BrandController {
     private readonly getAddonListUseCase: GetAddonListUseCase,
     @Inject(BrandDITokens.GetAddonUseCase)
     private readonly getAddonUseCase: GetAddonUseCase,
+    @Inject(BrandDITokens.UpdateAddonUseCase)
+    private readonly updateAddonUseCase: UpdateAddonUseCase,
   ) {}
 
   @HttpAuth(UserRole.ADMIN)
@@ -102,6 +107,29 @@ export class BrandController {
     });
 
     const addon: AddonUseCaseDto = await this.getAddonUseCase.execute(adapter);
+
+    return CoreApiResponse.success<AddonUseCaseDto>(addon);
+  }
+  @HttpAuth(UserRole.ADMIN)
+  @Patch("/:brandId/addons/:addonId")
+  @HttpCode(HttpStatus.OK)
+  public async updateAddon(
+    @Body() body: HttpRestApiCreateAddonBody,
+    @Param("brandId") brandId: string,
+    @Param("addonId") addonId: string,
+  ): Promise<CoreApiResponse<AddonUseCaseDto>> {
+    const adapter: UpdateAddonAdapter = await UpdateAddonAdapter.new({
+      name: body.name,
+      description: body.description,
+      price: body.price,
+      category: body.category,
+      addonId,
+      brandId,
+    });
+
+    const addon: AddonUseCaseDto = await this.updateAddonUseCase.execute(
+      adapter,
+    );
 
     return CoreApiResponse.success<AddonUseCaseDto>(addon);
   }

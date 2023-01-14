@@ -7,4 +7,5 @@ export interface AddonRepositoryPort {
   findAddonsByBrandId(brandId: string): Promise<Optional<Addon[]>>;
   doesBrandExist(brandId: string): Promise<boolean>;
   createAddon(addon: Addon): Promise<void>;
+  updateAddon(addon: Addon): Promise<void>;
 }

@@ -6,6 +6,7 @@ import { BrandRepositoryPort } from "../../core/domain/brand/port/persistence/Br
 import { CreateAddonService } from "../../core/service/addon/usecase/CreateAddonService";
 import { GetAddonListService } from "../../core/service/addon/usecase/GetAddonListService";
 import { GetAddonService } from "../../core/service/addon/usecase/GetAddonService";
+import { UpdateAddonService } from "../../core/service/addon/usecase/UpdateAddonService";
 import { CreateBrandService } from "../../core/service/brand/usecase/CreateBrandService";
 import { DatabaseService } from "../../infrastructure/adapter/persistence/knex/database.service";
 import { AddonModel } from "../../infrastructure/adapter/persistence/knex/models/addon.model";
@@ -64,6 +65,12 @@ const useCaseProviders: Provider[] = [
     provide: BrandDITokens.GetAddonUseCase,
     useFactory: (addonRepository: AddonRepositoryPort) =>
       new GetAddonService(addonRepository),
+    inject: [BrandDITokens.AddonRepository],
+  },
+  {
+    provide: BrandDITokens.UpdateAddonUseCase,
+    useFactory: (addonRepository: AddonRepositoryPort) =>
+      new UpdateAddonService(addonRepository),
     inject: [BrandDITokens.AddonRepository],
   },
 ];

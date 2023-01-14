@@ -14,7 +14,7 @@ export class GetAddonService implements GetAddonUseCase {
       payload.addonId,
     );
 
-    const doesAddonExist: boolean = !addon;
+    const doesAddonExist = !addon;
 
     CoreAssert.isFalse(
       doesAddonExist,

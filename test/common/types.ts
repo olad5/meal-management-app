@@ -12,6 +12,7 @@ type Addon = {
   brandId: string;
   description?: string;
   category?: string;
+  price: number;
 };
 
 export type CreateAccountResponseType = CommonResponseType & {

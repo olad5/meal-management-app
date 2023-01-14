@@ -1,5 +1,4 @@
 import { Inject } from "@nestjs/common";
-import { Optional } from "../../../../../../core/common/type/CommonTypes";
 import { Addon } from "../../../../../../core/domain/addon/entity/Addon";
 import { AddonRepositoryPort } from "../../../../../../core/domain/addon/port/persistence/AddonRepositoryPort";
 import { BrandRepositoryPort } from "../../../../../../core/domain/brand/port/persistence/BrandRepositoryPort";
@@ -16,35 +15,35 @@ export class ObjectionAddonRepositoryAdapter implements AddonRepositoryPort {
 
   async createAddon(addon: Addon): Promise<void> {
     const objectionAddon = ObjectionAddonMapper.toPersistence(addon);
-
     await this.addonModel.query().insert({
       ...objectionAddon,
     });
   }
 
+  async updateAddon(addon: Addon): Promise<void> {
+    const objectionAddon = ObjectionAddonMapper.toPersistence(addon);
+    await this.addonModel
+      .query()
+      .findById(objectionAddon.id)
+      .patch({
+        ...objectionAddon,
+      });
+  }
+
   async findAddonByAddonId(id: string): Promise<Addon> {
-    const queryResult = await this.addonModel.query().select().where("id ", id);
-    const addon = queryResult[0];
-    if (queryResult.length < 1) {
-      return undefined;
-    }
-    const domainEntity: Optional<Addon> =
-      ObjectionAddonMapper.toDomainEntity(addon);
-    return domainEntity;
+    const objectionAddon = await this.addonModel.query().findById(id);
+    return objectionAddon
+      ? ObjectionAddonMapper.toDomainEntity(objectionAddon)
+      : undefined;
   }
 
   async findAddonByAddonName(name: string): Promise<Addon> {
-    const queryResult = await this.addonModel
+    const objectionAddon = await this.addonModel
       .query()
-      .select()
-      .where("name", name.toLowerCase());
-    if (queryResult.length < 1) {
-      return undefined;
-    }
-    const addon = queryResult[0];
-    const domainEntity: Optional<Addon> =
-      ObjectionAddonMapper.toDomainEntity(addon);
-    return domainEntity;
+      .findOne("name", name.toLowerCase());
+    return objectionAddon
+      ? ObjectionAddonMapper.toDomainEntity(objectionAddon)
+      : undefined;
   }
 
   async doesBrandExist(brandId: string): Promise<boolean> {
