@@ -11,16 +11,6 @@ export class UpdateAddonService implements UpdateAddonUseCase {
   constructor(private readonly addonRepository: AddonRepositoryPort) {}
 
   public async execute(payload: UpdateAddonPort): Promise<AddonUseCaseDto> {
-    const doesBrandExist = await this.addonRepository.doesBrandExist(
-      payload.brandId,
-    );
-    CoreAssert.isFalse(
-      !doesBrandExist,
-      Exception.new({
-        code: Code.ACCESS_DENIED_ERROR,
-        overrideMessage: "Can not created addon, Brand does not exist.",
-      }),
-    );
     const existingAddon: Addon = await this.addonRepository.findAddonByAddonId(
       payload.addonId,
     );

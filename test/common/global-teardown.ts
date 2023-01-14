@@ -9,7 +9,10 @@ module.exports = async () => {
   if (isCI) {
     dockerCompose.down();
   } else {
-    if (Math.ceil(Math.random() * 10) === 10) {
+    /* eslint-disable */
+    console.time("global-teardown");
+    /* eslint-enable */
+    if (Math.floor(Math.random() * 6) === 5) {
       const databaseService = new DatabaseService();
       const dbInstance = databaseService.getInstance();
       for (const table of tableNames) {
@@ -19,5 +22,8 @@ module.exports = async () => {
       databaseService.closeConnection();
       Logger.log("done truncating the db");
     }
+    /* eslint-disable */
+    console.timeEnd("global-teardown");
+    /* eslint-enable */
   }
 };

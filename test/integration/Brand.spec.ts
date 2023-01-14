@@ -258,7 +258,7 @@ describe("/brands/", () => {
 
       const expectedResponse: SingleAddonResponseType = {
         code: 403,
-        message: "Can not created addon, Brand does not exist.",
+        message: "Can not create addon, Brand does not exist.",
         timestamp: expect.any(Number),
       };
 
@@ -692,6 +692,96 @@ describe("/brands/", () => {
           expect(patchAddonResponse).toMatchObject(expectedResponse);
         }
       }
+    });
+  });
+  describe("DELETE /brands/:brandId/addons/:addonId", () => {
+    const brandName: string = generate.getBrandName();
+
+    let brandId: string;
+
+    test("When I attempt to delete a single addon for a brand, the addon should be deleted and it should return a 200", async () => {
+      const createBrandResponse: CreateBrandResponseType =
+        await axiosAPIClient.post(
+          "/brands",
+          {
+            name: brandName,
+          },
+
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      brandId = createBrandResponse.data.id;
+      const addonName: string = generate.getAddonName();
+      const addonDescription: string = generate.getAddonDescription();
+      const addonPrice: number = generate.randomNumberInRange(100, 10);
+      const addonCategory: string = generate.getCategoryName();
+      const createAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addons`,
+          {
+            name: addonName,
+            description: addonDescription,
+            price: addonPrice,
+            category: addonCategory,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      const addonId: string = createAddonResponse.data.id;
+
+      const deleteAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.delete(`/brands/${brandId}/addons/${addonId}`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+
+      const expectedDeletedResponse: SingleAddonResponseType = {
+        code: 200,
+        message: "Success.",
+        timestamp: expect.any(Number),
+      };
+
+      expect(deleteAddonResponse).toMatchObject(expectedDeletedResponse);
+      const retrievedAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.get(`/brands/${brandId}/addons/${addonId}`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+
+      const expectedRetrievedResponse: SingleAddonResponseType = {
+        code: 404,
+        message: "Addon does not exist.",
+        timestamp: expect.any(Number),
+      };
+      expect(retrievedAddonResponse).toMatchObject(expectedRetrievedResponse);
+    });
+    test("When I attempt to delete a single addon for a brand and the addon does not exist, it should return a 404", async () => {
+      const addonId: string = v4();
+
+      const deleteAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.delete(`/brands/${brandId}/addons/${addonId}`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+
+      const expectedDeletedResponse: SingleAddonResponseType = {
+        code: 404,
+        message: "Addon does not exist.",
+        timestamp: expect.any(Number),
+      };
+
+      expect(deleteAddonResponse).toMatchObject(expectedDeletedResponse);
     });
   });
 });

@@ -4,6 +4,7 @@ import { AddonRepositoryPort } from "../../core/domain/addon/port/persistence/Ad
 import { BrandDITokens } from "../../core/domain/brand/di/BrandDITokens";
 import { BrandRepositoryPort } from "../../core/domain/brand/port/persistence/BrandRepositoryPort";
 import { CreateAddonService } from "../../core/service/addon/usecase/CreateAddonService";
+import { DeleteAddonService } from "../../core/service/addon/usecase/DeleteAddonService";
 import { GetAddonListService } from "../../core/service/addon/usecase/GetAddonListService";
 import { GetAddonService } from "../../core/service/addon/usecase/GetAddonService";
 import { UpdateAddonService } from "../../core/service/addon/usecase/UpdateAddonService";
@@ -71,6 +72,12 @@ const useCaseProviders: Provider[] = [
     provide: BrandDITokens.UpdateAddonUseCase,
     useFactory: (addonRepository: AddonRepositoryPort) =>
       new UpdateAddonService(addonRepository),
+    inject: [BrandDITokens.AddonRepository],
+  },
+  {
+    provide: BrandDITokens.DeleteAddonUseCase,
+    useFactory: (addonRepository: AddonRepositoryPort) =>
+      new DeleteAddonService(addonRepository),
     inject: [BrandDITokens.AddonRepository],
   },
 ];

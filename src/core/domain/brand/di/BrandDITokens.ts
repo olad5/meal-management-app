@@ -13,6 +13,9 @@ export class BrandDITokens {
   public static readonly UpdateAddonUseCase: unique symbol =
     Symbol("UpdateAddonUseCase");
 
+  public static readonly DeleteAddonUseCase: unique symbol =
+    Symbol("DeleteAddonUseCase");
+
   public static readonly GetAddonListUseCase: unique symbol = Symbol(
     "GetAddonListUseCase",
   );

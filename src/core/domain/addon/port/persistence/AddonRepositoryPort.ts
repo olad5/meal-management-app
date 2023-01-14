@@ -8,4 +8,5 @@ export interface AddonRepositoryPort {
   doesBrandExist(brandId: string): Promise<boolean>;
   createAddon(addon: Addon): Promise<void>;
   updateAddon(addon: Addon): Promise<void>;
+  deleteAddon(addon: Addon): Promise<void>;
 }

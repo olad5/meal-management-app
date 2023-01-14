@@ -18,7 +18,7 @@ export class CreateAddonService implements CreateAddonUseCase {
       !doesBrandExist,
       Exception.new({
         code: Code.ACCESS_DENIED_ERROR,
-        overrideMessage: "Can not created addon, Brand does not exist.",
+        overrideMessage: "Can not create addon, Brand does not exist.",
       }),
     );
     const doesAddonExist = !!(await this.addonRepository.findAddonByAddonName(

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -27,6 +28,8 @@ import { GetAddonAdapter } from "../../../../infrastructure/adapter/usecase/addo
 import { GetAddonUseCase } from "../../../../core/domain/addon/usecase/GetAddonUseCase";
 import { UpdateAddonAdapter } from "../../../../infrastructure/adapter/usecase/addon/UpdateAddonAdapter";
 import { UpdateAddonUseCase } from "../../../../core/domain/addon/usecase/UpdateAddonUseCase";
+import { DeleteAddonAdapter } from "../../../../infrastructure/adapter/usecase/addon/DeleteAddonAdapter";
+import { DeleteAddonUseCase } from "../../../../core/domain/addon/usecase/DeleteAddonUseCase";
 
 @Controller("brands")
 export class BrandController {
@@ -41,6 +44,9 @@ export class BrandController {
     private readonly getAddonUseCase: GetAddonUseCase,
     @Inject(BrandDITokens.UpdateAddonUseCase)
     private readonly updateAddonUseCase: UpdateAddonUseCase,
+
+    @Inject(BrandDITokens.DeleteAddonUseCase)
+    private readonly deleteAddonUseCase: DeleteAddonUseCase,
   ) {}
 
   @HttpAuth(UserRole.ADMIN)
@@ -132,5 +138,21 @@ export class BrandController {
     );
 
     return CoreApiResponse.success<AddonUseCaseDto>(addon);
+  }
+  @HttpAuth(UserRole.ADMIN)
+  @Delete("/:brandId/addons/:addonId")
+  @HttpCode(HttpStatus.OK)
+  public async deleteAddon(
+    @Param("brandId") brandId: string,
+    @Param("addonId") addonId: string,
+  ): Promise<CoreApiResponse<AddonUseCaseDto>> {
+    const adapter: DeleteAddonAdapter = await DeleteAddonAdapter.new({
+      addonId,
+      brandId,
+    });
+
+    await this.deleteAddonUseCase.execute(adapter);
+
+    return CoreApiResponse.success();
   }
 }

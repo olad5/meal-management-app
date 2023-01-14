@@ -5,8 +5,8 @@ const { execSync } = require("child_process");
 
 module.exports = async () => {
   console.time("global-setup");
-  const test_db_port = process.env.DB_PORT;
-  const isDBReachable = await isPortReachable(test_db_port);
+  const testDBPort = process.env.DB_PORT;
+  const isDBReachable = await isPortReachable(testDBPort);
   if (!isDBReachable) {
     await dockerCompose.upAll({
       cwd: path.join(__dirname),

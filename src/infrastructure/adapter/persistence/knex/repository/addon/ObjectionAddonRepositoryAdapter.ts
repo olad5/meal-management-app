@@ -30,6 +30,10 @@ export class ObjectionAddonRepositoryAdapter implements AddonRepositoryPort {
       });
   }
 
+  async deleteAddon(addon: Addon): Promise<void> {
+    await this.addonModel.query().deleteById(addon.getId());
+  }
+
   async findAddonByAddonId(id: string): Promise<Addon> {
     const objectionAddon = await this.addonModel.query().findById(id);
     return objectionAddon
