@@ -6,6 +6,13 @@ import {
   stopWebServer,
 } from "../../src/application/ServerApplication";
 import { TextUtils } from "../../src/core/common/util/text/TextUtils";
+import {
+  CreateBrandResponseType,
+  LoginResponseType,
+  SingleAddonResponseType,
+  RetrievedAddonsResponseType,
+} from "../common/types";
+import { v4 } from "uuid";
 
 let axiosAPIClient: AxiosInstance;
 
@@ -26,23 +33,39 @@ afterAll(async () => {
 });
 
 describe("/brands/", () => {
+  let adminLoginDataAccessToken: string;
   describe("POST /", () => {
-    type CreateBrandResponseType = {
-      code: number;
-      message: string;
-      timestamp: number;
-      data?: {
-        id: string;
-        name: string;
-      };
-    };
-
-    const brandName: string = generate.shortNote;
+    const brandName: string = generate.getBrandName();
     test("When I attempt to create a brand, a brand should be created and it should return a 200", async () => {
+      const { email, password, firstName, lastName, role } =
+        generate.signUpForm({ role: "ADMIN" });
+
+      await axiosAPIClient.post("/users", {
+        email,
+        password,
+        firstName,
+        lastName,
+        role,
+      });
+
+      const loginResponse: LoginResponseType = await axiosAPIClient.post(
+        "/auth/login",
+        {
+          email,
+          password,
+        },
+      );
+
+      adminLoginDataAccessToken = loginResponse.data.accessToken;
       const getResponse: CreateBrandResponseType = await axiosAPIClient.post(
         "/brands",
         {
           name: brandName,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
         },
       );
 
@@ -64,6 +87,11 @@ describe("/brands/", () => {
         {
           name: brandName,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        },
       );
 
       const expectedResponse: CreateBrandResponseType = {
@@ -72,6 +100,397 @@ describe("/brands/", () => {
         timestamp: expect.any(Number),
       };
       expect(getResponse).toMatchObject(expectedResponse);
+    });
+  });
+  describe("POST /brands/:brandId/addons", () => {
+    const brandName: string = generate.getBrandName();
+    const addonName: string = generate.getAddonName();
+    const addonDescription: string = generate.getAddonDescription();
+    const addonPrice: number = generate.randomNumberInRange(100, 10);
+    const addonCategory: string = generate.getCategoryName();
+
+    let brandId: string;
+    test("When I attempt to create an addon, the addon should be created and it should return a 200", async () => {
+      const createBrandResponse: CreateBrandResponseType =
+        await axiosAPIClient.post(
+          "/brands",
+          {
+            name: brandName,
+          },
+
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      brandId = createBrandResponse.data.id;
+
+      const createAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addons`,
+          {
+            name: addonName,
+            description: addonDescription,
+            price: addonPrice,
+            category: addonCategory,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 200,
+        message: "Success.",
+        timestamp: expect.any(Number),
+        data: {
+          id: expect.any(String),
+          name: TextUtils.toTitleCase(addonName),
+          brandId: brandId,
+          description: addonDescription,
+          category: TextUtils.toTitleCase(addonCategory),
+        },
+      };
+
+      expect(createAddonResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to create an addon that already exists, it should return a 403", async () => {
+      const getResponse: SingleAddonResponseType = await axiosAPIClient.post(
+        `/brands/${brandId}/addons`,
+        {
+          name: addonName,
+          description: addonDescription,
+          price: addonPrice,
+          category: addonCategory,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        },
+      );
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 403,
+        message: "Addon already exists.",
+        timestamp: expect.any(Number),
+      };
+      expect(getResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to create an addon that has a negative price exists, it should return a 403", async () => {
+      const getResponse: SingleAddonResponseType = await axiosAPIClient.post(
+        `/brands/${brandId}/addons`,
+        {
+          name: generate.paragraph().slice(0, 14),
+          description: generate.getAddonDescription,
+          price: -10,
+          category: addonCategory,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        },
+      );
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 403,
+        message: "Addon Price cannot be negative.",
+        timestamp: expect.any(Number),
+      };
+      expect(getResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to create an addon without the description and category param, the addon should be created and it should return a 200", async () => {
+      const addonName: string = generate.getAddonName();
+      const addonPrice: number = generate.randomNumberInRange(100, 10);
+
+      const createAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addons`,
+          {
+            name: addonName,
+            price: addonPrice,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 200,
+        message: "Success.",
+        timestamp: expect.any(Number),
+        data: {
+          brandId: brandId,
+          id: expect.any(String),
+          name: TextUtils.toTitleCase(addonName),
+        },
+      };
+
+      expect(createAddonResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to create an addon with a brand that does not exist, the addon should not be created and it should return a 403", async () => {
+      const addonName: string = generate.getAddonName();
+      const addonPrice: number = generate.randomNumberInRange(100, 10);
+
+      const brandId: string = v4();
+      const createAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addons`,
+          {
+            name: addonName,
+            price: addonPrice,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 403,
+        message: "Can not created addon, Brand does not exist.",
+        timestamp: expect.any(Number),
+      };
+
+      expect(createAddonResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to create an addon as a non-admin, the addon should not be created and it should return a 403", async () => {
+      const { email, password, firstName, lastName, role } =
+        generate.signUpForm({ role: "BASE_USER" });
+
+      await axiosAPIClient.post("/users", {
+        email,
+        password,
+        firstName,
+        lastName,
+        role,
+      });
+
+      const loginResponse: LoginResponseType = await axiosAPIClient.post(
+        "/auth/login",
+        {
+          email,
+          password,
+        },
+      );
+
+      const baseUserloginDataAccessToken = loginResponse.data.accessToken;
+      const addonName: string = generate.getAddonName();
+      const addonPrice: number = generate.randomNumberInRange(100, 10);
+
+      const createAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addons`,
+          {
+            name: addonName,
+            price: addonPrice,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${baseUserloginDataAccessToken}`,
+            },
+          },
+        );
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 403,
+        message: "Access denied.",
+        timestamp: expect.any(Number),
+      };
+
+      expect(createAddonResponse).toMatchObject(expectedResponse);
+    });
+  });
+  describe("GET /brands/:brandId/addons", () => {
+    const brandName: string = generate.getBrandName();
+    const createdAddonIds: string[] = [];
+    const retrievedAddonIds: string[] = [];
+
+    let brandId: string;
+
+    test("When I attempt to retrieve a list of all addons, the list should be retrieved and it should return a 200", async () => {
+      const createBrandResponse: CreateBrandResponseType =
+        await axiosAPIClient.post(
+          "/brands",
+          {
+            name: brandName,
+          },
+
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      brandId = createBrandResponse.data.id;
+
+      for (let i = 0; i < 20; i++) {
+        const addonName: string = generate.getAddonName();
+        const addonDescription: string = generate.getAddonDescription();
+        const addonPrice: number = generate.randomNumberInRange(100, 10);
+        const addonCategory: string = generate.getCategoryName();
+        const createAddonResponse: SingleAddonResponseType =
+          await axiosAPIClient.post(
+            `/brands/${brandId}/addons`,
+            {
+              name: addonName,
+              description: addonDescription,
+              price: addonPrice,
+              category: addonCategory,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${adminLoginDataAccessToken}`,
+              },
+            },
+          );
+
+        createdAddonIds.push(createAddonResponse.data.id);
+      }
+      const retrievedAddonsResponse: RetrievedAddonsResponseType =
+        await axiosAPIClient.get(`/brands/${brandId}/addons`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+      expect(retrievedAddonsResponse.code).toEqual(200);
+
+      expect(retrievedAddonsResponse.message).toEqual("Success.");
+      expect(createdAddonIds.length).toEqual(
+        retrievedAddonsResponse.data.length,
+      );
+
+      retrievedAddonIds.push(
+        ...retrievedAddonsResponse.data.map((addon) => addon.id),
+      );
+
+      const areAddonIdsTheSame: boolean =
+        JSON.stringify(createdAddonIds) === JSON.stringify(retrievedAddonIds);
+
+      expect(areAddonIdsTheSame).toEqual(true);
+    });
+    test("When I attempt to retrieve a list of all addons for a brand that does not exist, a list should not be retrieved and it should return a 404", async () => {
+      const brandId: string = v4();
+
+      const retrievedAddonsResponse: RetrievedAddonsResponseType =
+        await axiosAPIClient.get(`/brands/${brandId}/addons`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 404,
+        message: "Brand Not Found.",
+        timestamp: expect.any(Number),
+      };
+      expect(retrievedAddonsResponse).toMatchObject(expectedResponse);
+    });
+  });
+  describe("GET /brands/:brandId/addons/:addonId", () => {
+    const brandName: string = generate.getBrandName();
+
+    let brandId: string;
+
+    test("When I attempt to retrieve a single addon for a brand, the addon should be retrieved and it should return a 200", async () => {
+      const createBrandResponse: CreateBrandResponseType =
+        await axiosAPIClient.post(
+          "/brands",
+          {
+            name: brandName,
+          },
+
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      brandId = createBrandResponse.data.id;
+      const addonName: string = generate.getAddonName();
+      const addonDescription: string = generate.getAddonDescription();
+      const addonPrice: number = generate.randomNumberInRange(100, 10);
+      const addonCategory: string = generate.getCategoryName();
+      const createAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addons`,
+          {
+            name: addonName,
+            description: addonDescription,
+            price: addonPrice,
+            category: addonCategory,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      const addonId: string = createAddonResponse.data.id;
+      const retrievedAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.get(`/brands/${brandId}/addons/${addonId}`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 200,
+        message: "Success.",
+        timestamp: expect.any(Number),
+        data: {
+          name: TextUtils.toTitleCase(addonName),
+          id: addonId,
+          brandId: expect.any(String),
+          description: addonDescription,
+          category: addonCategory,
+        },
+      };
+      expect(retrievedAddonResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to retrieve a single addon for a brand and the addon does not exist, it should return a not found and a 404", async () => {
+      const brandName: string = generate.getBrandName();
+      const createBrandResponse: CreateBrandResponseType =
+        await axiosAPIClient.post(
+          "/brands",
+          {
+            name: brandName,
+          },
+
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      brandId = createBrandResponse.data.id;
+
+      const addonId: string = v4();
+      const retrievedAddonResponse: SingleAddonResponseType =
+        await axiosAPIClient.get(`/brands/${brandId}/addons/${addonId}`, {
+          headers: {
+            Authorization: `Bearer ${adminLoginDataAccessToken}`,
+          },
+        });
+
+      const expectedResponse: SingleAddonResponseType = {
+        code: 404,
+        message: "Addon does not exist.",
+        timestamp: expect.any(Number),
+      };
+      expect(retrievedAddonResponse).toMatchObject(expectedResponse);
     });
   });
 });

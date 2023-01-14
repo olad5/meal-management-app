@@ -3,7 +3,7 @@ import dockerCompose from "docker-compose";
 import { DatabaseService } from "../../src/infrastructure/adapter/persistence/knex/database.service";
 import { Logger } from "@nestjs/common";
 
-const tableNames: string[] = ["user", "brand"];
+const tableNames: string[] = ["user", "brand", "addon"];
 
 module.exports = async () => {
   if (isCI) {
