@@ -14,4 +14,5 @@ export class DatabaseConfig {
     .asString();
 
   public static readonly DB_NAME: string = get("DB_NAME").required().asString();
+  public static readonly DATABASE_URL = get("DATABASE_URL").asString();
 }
