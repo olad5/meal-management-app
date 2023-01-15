@@ -39,6 +39,13 @@ export type CreateBrandResponseType = CommonResponseType & {
     name: string;
   };
 };
+export type CreateAddonCategoryResponseType = CommonResponseType & {
+  data?: {
+    id: string;
+    name: string;
+    brandId: string;
+  };
+};
 
 export type LoginResponseType = CommonResponseType & {
   data?: {

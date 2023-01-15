@@ -11,6 +11,7 @@ import {
   LoginResponseType,
   SingleAddonResponseType,
   RetrievedAddonsResponseType,
+  CreateAddonCategoryResponseType,
 } from "../common/types";
 import { v4 } from "uuid";
 
@@ -186,8 +187,8 @@ describe("/brands/", () => {
       const getResponse: SingleAddonResponseType = await axiosAPIClient.post(
         `/brands/${brandId}/addons`,
         {
-          name: generate.paragraph().slice(0, 14),
-          description: generate.getAddonDescription,
+          name: generate.getAddonName(),
+          description: generate.getAddonDescription(),
           price: -10,
           category: addonCategory,
         },
@@ -375,9 +376,15 @@ describe("/brands/", () => {
       retrievedAddonIds.push(
         ...retrievedAddonsResponse.data.map((addon) => addon.id),
       );
+      function sortArray(a: string, b: string) {
+        if (a > b) return -1;
+        if (a < b) return 1;
+        return 0;
+      }
 
       const areAddonIdsTheSame: boolean =
-        JSON.stringify(createdAddonIds) === JSON.stringify(retrievedAddonIds);
+        JSON.stringify(createdAddonIds.sort(sortArray)) ===
+        JSON.stringify(retrievedAddonIds.sort(sortArray));
 
       expect(areAddonIdsTheSame).toEqual(true);
     });
@@ -782,6 +789,76 @@ describe("/brands/", () => {
       };
 
       expect(deleteAddonResponse).toMatchObject(expectedDeletedResponse);
+    });
+  });
+  describe("POST /brands/:brandId/addon-categories", () => {
+    const brandName: string = generate.getBrandName();
+
+    let brandId: string;
+    const addonCategory: string = generate.getCategoryName();
+
+    test("When I attempt to create a new addon category for a brand, the addon should be created and it should return a 200", async () => {
+      const createBrandResponse: CreateBrandResponseType =
+        await axiosAPIClient.post(
+          "/brands",
+          {
+            name: brandName,
+          },
+
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+
+      brandId = createBrandResponse.data.id;
+
+      const createAddonCategoryResponse: CreateAddonCategoryResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addon-categories`,
+          {
+            name: addonCategory,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+      const expectedResponse = {
+        code: 200,
+        message: "Success.",
+        timestamp: expect.any(Number),
+        data: {
+          name: TextUtils.toTitleCase(addonCategory),
+          id: expect.any(String),
+          brandId,
+        },
+      };
+
+      expect(createAddonCategoryResponse).toMatchObject(expectedResponse);
+    });
+    test("When I attempt to create a new addon category for a brand and the addon category already exists, the addon category should not be created and it should return a 403", async () => {
+      const createAddonCategoryResponse: CreateAddonCategoryResponseType =
+        await axiosAPIClient.post(
+          `/brands/${brandId}/addon-categories`,
+          {
+            name: addonCategory,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${adminLoginDataAccessToken}`,
+            },
+          },
+        );
+      const expectedResponse = {
+        code: 403,
+        message: "AddonCategory already exists.",
+        timestamp: expect.any(Number),
+      };
+
+      expect(createAddonCategoryResponse).toMatchObject(expectedResponse);
     });
   });
 });

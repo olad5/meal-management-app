@@ -2,7 +2,7 @@ import { TextUtils } from "../../../common/util/text/TextUtils";
 import { IsDate, IsNumber, IsString } from "class-validator";
 import { v4 } from "uuid";
 import { Entity } from "../../../common/entity/Entity";
-import { CreateAddonEntityPayload } from "./type/CreateBrandEntityPayload";
+import { CreateAddonEntityPayload } from "./type/CreateAddonEntityPayload";
 
 export class Addon extends Entity<string> {
   @IsString()
@@ -57,9 +57,9 @@ export class Addon extends Entity<string> {
     this.createdAt = payload.createdAt || new Date();
   }
   public static async new(payload: CreateAddonEntityPayload): Promise<Addon> {
-    const brand: Addon = new Addon(payload);
-    await brand.validate();
+    const addon: Addon = new Addon(payload);
+    await addon.validate();
 
-    return brand;
+    return addon;
   }
 }

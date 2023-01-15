@@ -1,8 +1,10 @@
 import { Module, Provider } from "@nestjs/common";
 import { ObjectionModule } from "@willsoto/nestjs-objection";
+import { AddonCategoryRepositoryPort } from "../../core/domain/addon/port/persistence/AddonCategoryRepositoryPort";
 import { AddonRepositoryPort } from "../../core/domain/addon/port/persistence/AddonRepositoryPort";
 import { BrandDITokens } from "../../core/domain/brand/di/BrandDITokens";
 import { BrandRepositoryPort } from "../../core/domain/brand/port/persistence/BrandRepositoryPort";
+import { CreateAddonCategoryService } from "../../core/service/addon/usecase/CreateAddonCategoryService";
 import { CreateAddonService } from "../../core/service/addon/usecase/CreateAddonService";
 import { DeleteAddonService } from "../../core/service/addon/usecase/DeleteAddonService";
 import { GetAddonListService } from "../../core/service/addon/usecase/GetAddonListService";
@@ -11,8 +13,10 @@ import { UpdateAddonService } from "../../core/service/addon/usecase/UpdateAddon
 import { CreateBrandService } from "../../core/service/brand/usecase/CreateBrandService";
 import { DatabaseService } from "../../infrastructure/adapter/persistence/knex/database.service";
 import { AddonModel } from "../../infrastructure/adapter/persistence/knex/models/addon.model";
+import { AddonCategoryModel } from "../../infrastructure/adapter/persistence/knex/models/addonCategory.model";
 import { BrandModel } from "../../infrastructure/adapter/persistence/knex/models/brand.model";
 import { ObjectionAddonRepositoryAdapter } from "../../infrastructure/adapter/persistence/knex/repository/addon/ObjectionAddonRepositoryAdapter";
+import { ObjectionAddonCategoryRepositoryAdapter } from "../../infrastructure/adapter/persistence/knex/repository/addonCategory/ObjectionAddonCategoryRepositoryAdapter";
 import { ObjectionBrandRepositoryAdapter } from "../../infrastructure/adapter/persistence/knex/repository/brand/ObjectionBrandRepositoryAdapter";
 import { BrandController } from "../api/http-rest/controller/BrandController";
 import { InfrastructureModule } from "./InfrastructureModule";
@@ -41,6 +45,15 @@ const persistenceProviders: Provider[] = [
       return objectionAddonRepository;
     },
     inject: [AddonModel, BrandDITokens.BrandRepository],
+  },
+  {
+    provide: BrandDITokens.AddonCategoryRepository,
+    useFactory: (databaseService: typeof AddonCategoryModel) => {
+      const objectionAddonRepository =
+        new ObjectionAddonCategoryRepositoryAdapter(databaseService);
+      return objectionAddonRepository;
+    },
+    inject: [AddonCategoryModel],
   },
 ];
 const useCaseProviders: Provider[] = [
@@ -80,7 +93,14 @@ const useCaseProviders: Provider[] = [
       new DeleteAddonService(addonRepository),
     inject: [BrandDITokens.AddonRepository],
   },
+  {
+    provide: BrandDITokens.CreateAddonCategoryUseCase,
+    useFactory: (addonCategoryRepository: AddonCategoryRepositoryPort) =>
+      new CreateAddonCategoryService(addonCategoryRepository),
+    inject: [BrandDITokens.AddonCategoryRepository],
+  },
 ];
+
 @Module({
   controllers: [BrandController],
   providers: [...useCaseProviders, ...persistenceProviders],
@@ -88,7 +108,7 @@ const useCaseProviders: Provider[] = [
   imports: [
     InfrastructureModule,
     DatabaseService,
-    ObjectionModule.forFeature([BrandModel, AddonModel]),
+    ObjectionModule.forFeature([BrandModel, AddonModel, AddonCategoryModel]),
   ],
 })
 export class BrandModule {}

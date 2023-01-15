@@ -10,6 +10,10 @@ export class BrandDITokens {
   public static readonly GetAddonUseCase: unique symbol =
     Symbol("GetAddonUseCase");
 
+  public static readonly CreateAddonCategoryUseCase: unique symbol = Symbol(
+    "CreateAddonCategoryUseCase",
+  );
+
   public static readonly UpdateAddonUseCase: unique symbol =
     Symbol("UpdateAddonUseCase");
 
@@ -27,4 +31,7 @@ export class BrandDITokens {
 
   public static readonly AddonRepository: unique symbol =
     Symbol("AddonRepository");
+  public static readonly AddonCategoryRepository: unique symbol = Symbol(
+    "AddonCategoryRepository",
+  );
 }

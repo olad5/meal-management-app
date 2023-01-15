@@ -3,7 +3,7 @@ import dockerCompose from "docker-compose";
 import { DatabaseService } from "../../src/infrastructure/adapter/persistence/knex/database.service";
 import { Logger } from "@nestjs/common";
 
-const tableNames: string[] = ["user", "brand", "addon"];
+const tableNames: string[] = ["user", "brand", "addon", "category"];
 
 module.exports = async () => {
   if (isCI) {
@@ -12,7 +12,7 @@ module.exports = async () => {
     /* eslint-disable */
     console.time("global-teardown");
     /* eslint-enable */
-    if (Math.floor(Math.random() * 6) === 5) {
+    if (Math.ceil(Math.random() * 10) === 10) {
       const databaseService = new DatabaseService();
       const dbInstance = databaseService.getInstance();
       for (const table of tableNames) {

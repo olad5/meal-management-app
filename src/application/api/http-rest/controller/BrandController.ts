@@ -30,6 +30,10 @@ import { UpdateAddonAdapter } from "../../../../infrastructure/adapter/usecase/a
 import { UpdateAddonUseCase } from "../../../../core/domain/addon/usecase/UpdateAddonUseCase";
 import { DeleteAddonAdapter } from "../../../../infrastructure/adapter/usecase/addon/DeleteAddonAdapter";
 import { DeleteAddonUseCase } from "../../../../core/domain/addon/usecase/DeleteAddonUseCase";
+import { CreateAdddonCategoryAdapter } from "../../../../infrastructure/adapter/usecase/addon/CreateAddonCategoryAdapter";
+import { CreateAddonCategoryUseCase } from "../../../../core/domain/addon/usecase/CreateAddonCategoryUseCase";
+import { AddonCategoryUseCaseDto } from "../../../../core/domain/addon/usecase/dto/AddonCategoryUseCaseDto";
+import { HttpRestApiCreateAddonCategoryBody } from "./request/brand/HttpRestApiCreateAddonCategoryBody";
 
 @Controller("brands")
 export class BrandController {
@@ -44,9 +48,10 @@ export class BrandController {
     private readonly getAddonUseCase: GetAddonUseCase,
     @Inject(BrandDITokens.UpdateAddonUseCase)
     private readonly updateAddonUseCase: UpdateAddonUseCase,
-
     @Inject(BrandDITokens.DeleteAddonUseCase)
     private readonly deleteAddonUseCase: DeleteAddonUseCase,
+    @Inject(BrandDITokens.CreateAddonCategoryUseCase)
+    private readonly createAddonCategoryUseCase: CreateAddonCategoryUseCase,
   ) {}
 
   @HttpAuth(UserRole.ADMIN)
@@ -86,6 +91,7 @@ export class BrandController {
 
     return CoreApiResponse.success<AddonUseCaseDto>(createdAddon);
   }
+
   @HttpAuth(UserRole.ADMIN)
   @Get("/:brandId/addons")
   @HttpCode(HttpStatus.OK)
@@ -154,5 +160,25 @@ export class BrandController {
     await this.deleteAddonUseCase.execute(adapter);
 
     return CoreApiResponse.success();
+  }
+  @HttpAuth(UserRole.ADMIN)
+  @Post("/:brandId/addon-categories")
+  @HttpCode(HttpStatus.OK)
+  public async createAddonCategory(
+    @Body() body: HttpRestApiCreateAddonCategoryBody,
+    @Param("brandId") brandId: string,
+  ): Promise<CoreApiResponse<AddonCategoryUseCaseDto>> {
+    const adapter: CreateAdddonCategoryAdapter =
+      await CreateAdddonCategoryAdapter.new({
+        name: body.name,
+        brandId,
+      });
+
+    const createdAddonCategory: AddonCategoryUseCaseDto =
+      await this.createAddonCategoryUseCase.execute(adapter);
+
+    return CoreApiResponse.success<AddonCategoryUseCaseDto>(
+      createdAddonCategory,
+    );
   }
 }

@@ -7,13 +7,10 @@ const getPassword = (...args) => `!0_Oo${faker.internet.password(...args)}`;
 const getEmail = faker.internet.email;
 const getFirstName = faker.name.firstName;
 const getLastName = faker.name.lastName;
-const getDate = (start: Date, end: Date) =>
-  faker.date.betweens(start, end, 1)[0];
-const getBrandName = () => faker.commerce.productName();
+const getBrandName = () => faker.commerce.productName() + v4();
 const getAddonName = () => faker.commerce.product() + v4();
-const getCategoryName = () => faker.commerce.department();
+const getCategoryName = () => faker.commerce.department() + v4();
 const getAddonDescription = () => faker.commerce.productDescription();
-const getParagraph = faker.lorem.paragraph;
 const getId = faker.datatype.uuid;
 
 function signUpForm(overrides: { [key: string]: string } = {}) {
@@ -60,11 +57,9 @@ export {
   getAddonName,
   getAddonDescription,
   getCategoryName,
-  getDate as newDate,
   getPassword as password,
   getEmail as email,
   getFirstName as firstname,
   getLastName as lastname,
-  getParagraph as paragraph,
   getId as id,
 };
