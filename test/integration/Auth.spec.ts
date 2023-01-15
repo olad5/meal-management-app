@@ -59,7 +59,7 @@ describe("/auth/", () => {
       };
       expect(loginResponse).toMatchObject(expectedResponse);
     });
-    test("When I attempt to create an account with an email that already exists, it should return a 403", async () => {
+    test("When I attempt to login with an account that does not exists, it should return a 403", async () => {
       const { email, password, role } = generate.signUpForm({ role: "ADMIN" });
       const loginResponse: LoginResponseType = await axiosAPIClient.post(
         "/auth/login",
