@@ -7,7 +7,7 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "npm run migrate:prod && nest start",
     "prod-env": "npx dotenv -e ./.env -- ",
     "start:dev": "npm run prod-env nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -17,6 +17,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "migrate:prod": "npx  knex migrate:latest --knexfile=src/infrastructure/adapter/persistence/knex/knexfile.ts",
     "migrate:test-mode": "npx dotenv -e ./env/test.env --  knex migrate:latest --knexfile=src/infrastructure/adapter/persistence/knex/knexfile.ts",
     "migrate:latest": "npx dotenv -e .env -- knex migrate:latest --knexfile=src/core/service/user/usecase/infrastructure/adapter/persistence/knex/knexfile.ts",
     "prepare": "node -e \"if (process.env.NODE_ENV !== 'production'){process.exit(1)} \" || husky install"
