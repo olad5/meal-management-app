@@ -27,6 +27,11 @@ It has the following functionalities
   git clone https://github.com/olad5/meal-management-app.git
   ```
 
+* Postman API docs: [Link](https://documenter.getpostman.com/view/19165940/2s8ZDSdRH7)
+
+* Live Link: [Link](https://foodcourt-engineering-assement.onrender.com/)
+
+
 ## Running the project
 
 1. Install and start [Docker](https://docs.docker.com/compose/gettingstarted/) if you haven't already.
